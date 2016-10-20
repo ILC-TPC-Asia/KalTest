@@ -1,0 +1,72 @@
+#include "../../conf/makejsf.tmpl"
+
+LDFLAGS   = /* $(GLIBS) */
+
+INSTALLDIR    = ../..
+SOREV         = 2005.01
+PACKAGENAME   = S4Geom
+
+SRCS          = THelicalTrack.$(SrcSuf)  \
+		TCircle.$(SrcSuf) \
+ 		TCutCone.$(SrcSuf) \
+		TVCurve.$(SrcSuf) \
+		TCylinder.$(SrcSuf) \
+                TPlane.$(SrcSuf) \
+		THype.$(SrcSuf) \
+		TStraightTrack.$(SrcSuf) \
+		TTube.$(SrcSuf) \
+		TVSolid.$(SrcSuf) \
+		TVSurface.$(SrcSuf) \
+		TVTrack.$(SrcSuf)
+
+OBJS	      =	$(subst .$(SrcSuf),.$(ObjSuf),$(SRCS)) \
+		$(PACKAGENAME)Dict.$(ObjSuf)
+
+HDRS	      = $(subst .$(SrcSuf),.h,$(SRCS))
+
+DICTNAME      = $(PACKAGENAME)Dict
+DICTMAPNAME   = $(DICTNAME)_rdict.pcm
+
+LIBNAME       = $(PACKAGENAME)
+
+SONAME        = lib$(LIBNAME).$(DllSuf).$(SOREV)
+
+LIBINSTALLDIR = $(INSTALLDIR)/lib
+INCINSTALLDIR = $(INSTALLDIR)/include
+INCPATH	      = -I. -I$(INCINSTALLDIR)
+CXXFLAGS     += $(INCPATH) -O0 -g 
+SHLIBLDFLAGS  = $(DYLIBFLAGS)
+
+all:: $(SONAME)
+
+SharedLibraryTarget($(LIBNAME),$(SOREV),$(OBJS),.,.)
+
+InstallSharedLibrary($(LIBNAME),$(SOREV),$(LIBINSTALLDIR))
+
+InstallMultipleFlags($(HDRS),$(INCINSTALLDIR),-m 644)
+
+#if __ROOT_VERSION__ >= 6
+install:: installdict
+
+$(DICTMAPNAME): $(DICTNAME).$(SrcSuf)
+
+installdict: $(DICTMAPNAME)
+	$(INSTALL) -p -m 644 $(DICTMAPNAME) $(LIBINSTALLDIR)
+#endif
+
+clean:: 
+	@rm -f $(OBJS) core *.$(DllSuf) $(DICTNAME).$(SrcSuf) $(DICTNAME).h
+
+depend:: $(SRCS) $(HDRS)
+	for i in $(SRCS); do \
+	rmkdepend -a -- $(CXXFLAGS) $(RCINTDEFINES) $(INCPATH) $(DEPENDFILES) -- $$i; done
+
+distclean:: clean
+	@rm -f $(OBJS) core *.$(DllSuf) *.$(DylibSuf)
+	@rm -f $(DICTNAME).$(SrcSuf) $(DICTNAME).h *~
+	@rm -f $(SONAME) *.root Makefile $(DICTMAPNAME)
+
+$(DICTNAME).$(SrcSuf): $(HDRS) LinkDef.h
+	@echo "Generating dictionary ..."
+	$(ROOTCINT) -f $(DICTNAME).$(SrcSuf) \
+ 		-c $(RCINTDEFINES) -I$(INCINSTALLDIR) $(HDRS) LinkDef.h

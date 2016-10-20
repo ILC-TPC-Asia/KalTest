@@ -1,0 +1,65 @@
+#!/bin/sh
+#######################
+#  create a list of depend files of g++
+#$Id: cxxdepends,v 1.11 2016/02/22 06:49:17 fujiik Exp $
+#######################
+
+#echo $1
+export LANG=C
+export LC_ALL=C
+
+uname=`uname`
+echo=`which echo`
+
+if [ x`root-config --arch` == "xmacosx" ]; then
+cxx="gcc-32"
+else
+cxx="gcc"
+fi
+if [ x`root-config --arch` == "xmacosx64" ]; then
+  if [ x`root-config --cxx` == "xclang++" ]; then
+    incdir=`find /usr/include -name iostream | sed -e 's;/iostream;;'`
+    incdir="$incdir `find /usr/include -name stdarg.h | sed -e 's;/stdarg.h;;'`"
+    incdir="$incdir `find /usr/include -name endian.h | sed -e 's;/endian.h;;' | grep machine`"
+    incdir="$incdir `find /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -name atomic | sed -e 's;/atomic;;'`"
+    for i in $incdir; do
+      $echo -n " -I$i" 
+    done
+    exit 0
+  fi
+fi
+iret=`which $cxx | grep -c /`
+if [ $iret -gt 0 ]; then
+  gccverno=`$cxx -v 2>&1 | tail -1 | sed -e 's;.* \([0-9][0-9]*\.[0-9]*\.*[0-9]*\).*;\1;'`
+  gccmajver=`$echo $gccverno | cut -d. -f1`
+  if [ $gccmajver -lt 4 ]; then
+    gccvers=`$cxx -v 2>&1 | head -1 | sed -e 's;[^/]*\(/.*\)/specs.*;\1;'`
+    cppfile=$gccvers/cc1
+  else
+    prefix=`$cxx -v 2>&1 | grep 'prefix=' | sed -e 's;.*--prefix=\([^ ][^ ]*\).*;\1;'`
+    osvers=`$cxx -v 2>&1 | grep Target:  | sed -e 's;.*Target: *;;'`
+    gccvers=$prefix/libexec/gcc/$osvers/$gccverno
+    cppfile=$gccvers/cc1
+  fi
+  if [ $uname == "CYGWIN_NT-5.0" ]; then
+     cppfile=$gccvers/cc1plus.exe
+  fi
+  if [ ! -f $cppfile ]; then
+    cppfiled=$gccvers/cpp
+    if [ -f $cppfiled ]; then
+      cppfile=$cppfiled
+    else
+      cppfile=`$echo $cppfile | sed -e 's;/lib/;/libexec/;'`
+    fi
+  fi
+
+  strcmd=`which strings`
+  incdir=`$strcmd $cppfile  | grep include  | grep "/" | uniq `
+  for i in $incdir; do
+    if [ -d $i -a $i != "/usr/include" -a $i != "/usr/local/include" ]; then
+	$echo -n " -I$i" 
+    fi
+  done
+fi
+
+exit 0

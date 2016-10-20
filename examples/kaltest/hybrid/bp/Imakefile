@@ -1,0 +1,63 @@
+#include "../../../../conf/makejsf.tmpl"
+
+INSTALLDIR    = ../../../..
+PACKAGENAME   = EXBP
+SOREV         = 2005.01
+SRCS          = EXBPKalDetector.$(SrcSuf) \
+		EXBPMeasLayer.$(SrcSuf) \
+		EXBPConeMeasLayer.$(SrcSuf) \
+		EXBPHit.$(SrcSuf) \
+		EXBPConeHit.$(SrcSuf)
+
+OBJS	      =	$(subst .$(SrcSuf),.$(ObjSuf),$(SRCS)) \
+		$(PACKAGENAME)Dict.$(ObjSuf)
+
+HDRS	      = $(subst .$(SrcSuf),.h,$(SRCS)) 
+
+DICTNAME      = $(PACKAGENAME)Dict
+DICTMAPNAME   = $(DICTNAME)_rdict.pcm
+
+LIBNAME       = $(PACKAGENAME)
+
+LIBINSTALLDIR = $(INSTALLDIR)/lib
+INCINSTALLDIR = $(INSTALLDIR)/include
+INCPATH	      = -I. -I.. -I$(INCINSTALLDIR)
+CXXFLAGS     += $(INCPATH) -O -g
+SHLIBLDFLAGS  = $(DYLIBFLAGS)
+
+
+all::
+
+SharedLibraryTarget($(LIBNAME),$(SOREV),$(OBJS),.,.)
+
+InstallSharedLibrary($(LIBNAME),$(SOREV),$(LIBINSTALLDIR))
+
+InstallMultipleFlags($(HDRS),$(INCINSTALLDIR),-m 644)
+
+#if __ROOT_VERSION__ >= 6
+install:: installdict
+
+$(DICTMAPNAME): $(DICTNAME).$(SrcSuf)
+
+installdict: $(DICTMAPNAME)
+	$(INSTALL) -p -m 644 $(DICTMAPNAME) $(LIBINSTALLDIR)
+#endif
+
+clean:: 
+	@rm -f $(OBJS) core *.$(DllSuf) $(DICTNAME).$(SrcSuf) $(DICTNAME).h
+
+depend:: $(SRCS) $(HDRS)
+	for i in $(SRCS); do \
+	rmkdepend -a -- $(CXXFLAGS) $(RCINTDEFINES) $(INCPATH) $(DEPENDFILES) -- $$i; done
+
+
+distclean:: clean
+	@rm -f $(OBJS) core *.$(DllSuf) $(DICTNAME).$(SrcSuf) $(DICTNAME).h *~
+	@rm -f $(SONAME) *.root Makefile $(DICTMAPNAME)
+	@rm -f *.d *.pcm
+
+$(DICTNAME).$(SrcSuf): $(HDRS) LinkDef.h
+	@echo "Generating dictionary ..."
+	$(ROOTCINT) -f $(DICTNAME).$(SrcSuf) \
+ 		-c $(INCPATH) $(HDRS) LinkDef.h
+

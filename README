@@ -1,13 +1,29 @@
 -------------------------------------------------------------------------------
-2016/10/20    Setup local repository 
+2016/10/26 (Git instruction updated)   
+2016/10/20 (Git instruction original)   
 -------------------------------------------------------------------------------
-mkdir KalTest
-cd KalTest
-git init
-git remote add ILC-TPC-Asia git@github.com:ILC-TPC-Asia/KalTest.git
-git fetch ILC-TPC-Asia
-git checkout ILC-TPC-Asia/master
-git checkout -b dev
+1) Setup local repository (For users who do not need to upload his/her codes.)
+-------------------------------------------------------------------------------
+$ cd <your_working_directory>
+$ git init
+$ git clone git://github.com/ILC-TPC-Asia/KalTest.git
+$ cd KalTest
+-------------------------------------------------------------------------------
+2) Setup local repository (For developers)
+-------------------------------------------------------------------------------
+$ cd <your_working_directory>
+$ git init
+$ git clone https://github.com/ILC-TPC-Asia/KalTest.git
+$ cd KalTest
+$ git checkout -b dev
+
+To upload source codes (In KalTest directory):
+$ git add <modified_file_names>
+$ git commit -m "WRITE COMMENTS HERE."
+$ git push origin dev:master 
+-------------------------------------------------------------------------------
+
+
 
 -------------------------------------------------------------------------------
 2016/02/22    KalTest Package

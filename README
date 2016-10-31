@@ -1,4 +1,5 @@
 -------------------------------------------------------------------------------
+2016/10/31 (Git instruction updated)   
 2016/10/26 (Git instruction updated)   
 2016/10/20 (Git instruction original)   
 -------------------------------------------------------------------------------
@@ -9,19 +10,19 @@ $ git init
 $ git clone git://github.com/ILC-TPC-Asia/KalTest.git
 $ cd KalTest
 -------------------------------------------------------------------------------
-2) Setup local repository (For developers)
+2) Commit your developments (You need the membership to commit to the repository.)
 -------------------------------------------------------------------------------
-$ cd <your_working_directory>
-$ git init
-$ git clone https://github.com/ILC-TPC-Asia/KalTest.git
-$ cd KalTest
+(In KalTest directory):
+$ git remote add myrepo https://github.com/ILC-TPC-Asia/KalTest.git
 $ git checkout -b dev
+(The above procedures are necessary only once.)
 
-To upload source codes (In KalTest directory):
 $ git add <modified_file_names>
 $ git commit -m "WRITE COMMENTS HERE."
-$ git push origin dev:master 
+
+$ git push myrepo dev:master 
 -------------------------------------------------------------------------------
+Find more details on Git in other references.
 
 
 
